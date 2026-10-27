@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Directory | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .directory-panel {
+            margin-top: 24px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .search-row input {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 15px;
+            border: 1px solid #dce3ea;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .search-row button,
+        .view-button {
+            background: #176b83;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .patient-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        .patient-table th,
+        .patient-table td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid #e8edf2;
+        }
+
+        .patient-table th {
+            color: #475467;
+            background: #f8fafc;
+            font-size: 13px;
+        }
+
+        .patient-table td {
+            color: #344054;
+            font-size: 14px;
+        }
+
+        .patient-table tbody tr:hover {
+            background: #f8fbfc;
+        }
+
+        .status-message {
+            margin: 14px 0;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            color: #b42318;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 28px;
+            color: #64748b;
+        }
+
+        .view-button {
+            padding: 9px 12px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .search-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <a class="nav-link" href="index.html">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="departments.html">▤ &nbsp; Departments</a>
+        <a class="nav-link" href="analytics.html">▥ &nbsp; Data Analytics</a>
+        <a class="nav-link" href="visits.html">▣ &nbsp; Patient Visits</a>
+        <a class="nav-link active" href="patients.html">♙ &nbsp; Patient Directory</a>
+        <a class="nav-link" href="add-patient.html">＋ &nbsp; Add Patient</a>
+        <a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Connecting...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">PATIENT RECORD MANAGEMENT</p>
+                <h1>Patient Directory</h1>
+                <p class="subtitle">
+                    Search patients and access their individual records.
+                </p>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">PATIENT DATABASE</p>
+                <h2>Find a patient</h2>
+                <p>
+                    Search by patient name, patient ID, or phone number.
+                    Open a record to view its visit history and analysis.
+                </p>
+            </div>
+            <div class="welcome-symbol">⌕</div>
+        </section>
+
+        <section class="panel directory-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Registered Patients</h2>
+                    <p id="patient-count">Loading patient records...</p>
+                </div>
+                <a href="add-patient.html" class="view-button"
+                   style="text-decoration:none;">+ Add Patient</a>
+            </div>
+
+            <form class="search-row" id="search-form">
+                <input
+                    type="search"
+                    id="search-input"
+                    placeholder="Enter name, patient ID, or phone number"
+                    aria-label="Search patients">
+                <button type="submit">Search</button>
+                <button type="button" id="clear-button">Clear</button>
+            </form>
+
+            <p id="status-message" class="status-message" role="status"
+               aria-live="polite"></p>
+
+            <div class="table-wrapper">
+                <table class="patient-table">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Phone Number</th>
+                            <th>Date of Birth</th>
+                            <th>Age Band</th>
+                            <th>Gender</th>
+                            <th>Total Visits</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body">
+                        <tr>
+                            <td colspan="8" class="empty-message">
+                                Loading patients...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        const searchForm = document.getElementById("search-form");
+        const searchInput = document.getElementById("search-input");
+        const clearButton = document.getElementById("clear-button");
+        const tableBody = document.getElementById("patient-table-body");
+        const patientCount = document.getElementById("patient-count");
+        const statusMessage = document.getElementById("status-message");
+        const connectionStatus = document.getElementById("connection-status");
+
+        function addCell(row, value) {
+            const cell = document.createElement("td");
+            cell.textContent = value === null || value === undefined || value === ""
+                ? "—"
+                : value;
+            row.appendChild(cell);
+            return cell;
+        }
+
+        function formatDate(value) {
+            if (!value) return "—";
+
+            const parts = value.split("-");
+            if (parts.length !== 3) return value;
+
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
+        function showEmpty(message) {
+            tableBody.replaceChildren();
+
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+
+            cell.colSpan = 8;
+            cell.className = "empty-message";
+            cell.textContent = message;
+
+            row.appendChild(cell);
+            tableBody.appendChild(row);
+        }
+
+        function renderPatients(patients) {
+            tableBody.replaceChildren();
+
+            if (!patients.length) {
+                showEmpty("No matching patients found.");
+                patientCount.textContent = "0 patients found";
+                return;
+            }
+
+            patientCount.textContent =
+                `${patients.length} patient${patients.length === 1 ? "" : "s"} found`;
+
+            patients.forEach(patient => {
+                const row = document.createElement("tr");
+
+                addCell(row, patient.patient_id);
+                addCell(row, patient.patient_name || "Not provided");
+                addCell(row, patient.phone_number);
+                addCell(row, formatDate(patient.date_of_birth));
+                addCell(row, patient.age_band);
+                addCell(row, patient.gender);
+                addCell(row, patient.total_visits ?? 0);
+
+                const actionCell = document.createElement("td");
+                const button = document.createElement("button");
+
+                button.type = "button";
+                button.className = "view-button";
+                button.textContent = "View Profile";
+
+                button.addEventListener("click", function () {
+                    window.location.href =
+                        `patient-profile.html?id=${encodeURIComponent(patient.patient_id)}`;
+                });
+
+                actionCell.appendChild(button);
+                row.appendChild(actionCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function loadPatients(search = "") {
+            statusMessage.className = "status-message";
+            statusMessage.textContent = "Loading patient records...";
+
+            try {
+                const url = new URL(`${API_URL}/api/patients`);
+
+                if (search.trim()) {
+                    url.searchParams.set("search", search.trim());
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Unable to load patients.");
+                }
+
+                if (!Array.isArray(result)) {
+                    throw new Error("The server returned an unexpected response.");
+                }
+
+                connectionStatus.textContent = "Backend connected";
+                renderPatients(result);
+                statusMessage.textContent = "";
+            } catch (error) {
+                console.error("Patient directory error:", error);
+                connectionStatus.textContent = "Backend disconnected";
+                patientCount.textContent = "Unable to load records";
+                showEmpty("Could not load patients. Check that Flask is running.");
+                statusMessage.className = "status-message error-message";
+                statusMessage.textContent = error.message;
+            }
+        }
+
+        searchForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            loadPatients(searchInput.value);
+        });
+
+        clearButton.addEventListener("click", function () {
+            searchInput.value = "";
+            loadPatients();
+        });
+
+        loadPatients();
+    </script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .patient-form {
+            max-width: 750px;
+            margin-top: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #344054;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #dce3ea;
+            border-radius: 8px;
+            background: white;
+            font-size: 15px;
+            color: #344054;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: 2px solid #b7e0e9;
+            border-color: #176b83;
+        }
+
+        .form-help {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 7px;
+            line-height: 1.5;
+        }
+
+        .save-button {
+            background: #176b83;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 13px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .save-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-message {
+            display: none;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .form-message.success {
+            display: block;
+            background: #e8f7ee;
+            color: #176b43;
+        }
+
+        .form-message.error {
+            display: block;
+            background: #fff0f0;
+            color: #b42318;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <a class="nav-link" href="dashboard.html">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="departments.html">▤ &nbsp; Departments</a>
+        <a class="nav-link" href="analytics.html">▥ &nbsp; Data Analytics</a>
+        <a class="nav-link" href="visits.html">▣ &nbsp; Patient Visits</a>
+        <a class="nav-link" href="patients.html">♙ &nbsp; Patient Directory</a>
+        <a class="nav-link active" href="add-patient.html">＋ &nbsp; Add Patient</a>
+        <a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Checking backend...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">PATIENT RECORD MANAGEMENT</p>
+                <h1>Add Patient</h1>
+                <p class="subtitle">
+                    Register and maintain patient demographic information.
+                </p>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">NEW RECORD</p>
+                <h2>Register a patient</h2>
+                <p>
+                    Enter the patient's details below. The database
+                    automatically generates a unique patient ID.
+                </p>
+            </div>
+            <div class="welcome-symbol">＋</div>
+        </section>
+
+        <section class="panel patient-form">
+            <div class="panel-heading">
+                <div>
+                    <h2>Patient Information</h2>
+                    <p>Name is required. Other fields can be filled in when available.</p>
+                </div>
+            </div>
+
+            <form id="patient-form">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="patient-name">Full Name *</label>
+                        <input
+                            type="text"
+                            id="patient-name"
+                            name="patient_name"
+                            maxlength="100"
+                            placeholder="Enter patient's full name"
+                            autocomplete="name"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone-number">Phone Number</label>
+                        <input
+                            type="tel"
+                            id="phone-number"
+                            name="phone_number"
+                            maxlength="20"
+                            placeholder="Enter phone number"
+                            autocomplete="tel">
+                        <p class="form-help">
+                            Optional. Include country code if needed.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date-of-birth">Date of Birth</label>
+                        <input
+                            type="date"
+                            id="date-of-birth"
+                            name="date_of_birth">
+                        <p class="form-help">
+                            Age band is calculated automatically when a date is provided.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="">Prefer not to specify</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age-band">Age Band</label>
+                        <select id="age-band" name="age_band">
+                            <option value="">Select age band</option>
+                            <option value="0-17">0–17 years</option>
+                            <option value="18-35">18–35 years</option>
+                            <option value="36-60">36–60 years</option>
+                            <option value="60+">60 years and above</option>
+                        </select>
+                        <p class="form-help" id="age-help">
+                            If date of birth is entered, the age band is calculated from it.
+                        </p>
+                    </div>
+                </div>
+
+                <button type="submit" class="save-button" id="save-button">
+                    Save Patient
+                </button>
+
+                <div
+                    id="form-message"
+                    class="form-message"
+                    role="status"
+                    aria-live="polite">
+                </div>
+            </form>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        const form = document.getElementById("patient-form");
+        const nameInput = document.getElementById("patient-name");
+        const phoneInput = document.getElementById("phone-number");
+        const dobInput = document.getElementById("date-of-birth");
+        const genderInput = document.getElementById("gender");
+        const ageBandInput = document.getElementById("age-band");
+        const ageHelp = document.getElementById("age-help");
+        const saveButton = document.getElementById("save-button");
+        const message = document.getElementById("form-message");
+        const connectionStatus = document.getElementById("connection-status");
+
+        const today = new Date();
+        const localToday = [
+            today.getFullYear(),
+            String(today.getMonth() + 1).padStart(2, "0"),
+            String(today.getDate()).padStart(2, "0")
+        ].join("-");
+
+        dobInput.max = localToday;
+
+        function calculateAgeBand(dateString) {
+            if (!dateString) return "";
+
+            const birthDate = new Date(dateString + "T00:00:00");
+            const now = new Date();
+
+            if (Number.isNaN(birthDate.getTime()) || birthDate > now) {
+                return "";
+            }
+
+            let age = now.getFullYear() - birthDate.getFullYear();
+
+            const birthdayNotReached =
+                now.getMonth() < birthDate.getMonth() ||
+                (
+                    now.getMonth() === birthDate.getMonth() &&
+                    now.getDate() < birthDate.getDate()
+                );
+
+            if (birthdayNotReached) age--;
+
+            if (age <= 17) return "0-17";
+            if (age <= 35) return "18-35";
+            if (age <= 60) return "36-60";
+            return "60+";
+        }
+
+        dobInput.addEventListener("change", function () {
+            if (!dobInput.value) {
+                ageHelp.textContent =
+                    "Select an age band if you leave date of birth empty.";
+                return;
+            }
+
+            const band = calculateAgeBand(dobInput.value);
+
+            if (!band) {
+                ageBandInput.value = "";
+                ageHelp.textContent = "Please enter a valid date of birth.";
+                return;
+            }
+
+            ageBandInput.value = band;
+            ageHelp.textContent = "Age band calculated from date of birth.";
+        });
+
+        ageBandInput.addEventListener("change", function () {
+            if (dobInput.value) {
+                ageBandInput.value = calculateAgeBand(dobInput.value);
+                ageHelp.textContent =
+                    "Age band is calculated from date of birth.";
+            }
+        });
+
+        function showMessage(text, success) {
+            message.textContent = text;
+            message.className = success
+                ? "form-message success"
+                : "form-message error";
+        }
+
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+
+                if (!response.ok) {
+                    throw new Error("Backend unavailable");
+                }
+
+                connectionStatus.textContent = "Backend connected";
+            } catch (error) {
+                connectionStatus.textContent = "Backend disconnected";
+            }
+        }
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const patientName = nameInput.value.trim();
+            const phoneNumber = phoneInput.value.trim();
+            const dateOfBirth = dobInput.value;
+            const gender = genderInput.value;
+            let ageBand = ageBandInput.value;
+
+            if (!patientName) {
+                showMessage("Please enter the patient's full name.", false);
+                return;
+            }
+
+            if (dateOfBirth) {
+                ageBand = calculateAgeBand(dateOfBirth);
+
+                if (!ageBand) {
+                    showMessage("Please enter a valid date of birth.", false);
+                    return;
+                }
+            }
+
+            if (!dateOfBirth && !ageBand) {
+                showMessage(
+                    "Please enter a date of birth or select an age band.",
+                    false
+                );
+                return;
+            }
+
+            saveButton.disabled = true;
+            saveButton.textContent = "Saving...";
+            message.className = "form-message";
+            message.textContent = "";
+
+            const patientData = {
+                patient_name: patientName,
+                phone_number: phoneNumber || null,
+                date_of_birth: dateOfBirth || null,
+                gender: gender || null,
+                age_band: ageBand
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/patients`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(patientData)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Unable to save patient.");
+                }
+
+                showMessage(
+                    `Patient registered successfully! Patient ID: ${result.patient_id}`,
+                    true
+                );
+
+                form.reset();
+                ageHelp.textContent =
+                    "If date of birth is entered, the age band is calculated from it.";
+
+                await checkBackend();
+
+            } catch (error) {
+                console.error("Patient registration error:", error);
+
+                showMessage(
+                    error.message === "Failed to fetch"
+                        ? "Cannot connect to Flask. Make sure your backend is running."
+                        : error.message,
+                    false
+                );
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Patient";
+            }
+        });
+
+        checkBackend();
+    </script>
+</body>
+</html>

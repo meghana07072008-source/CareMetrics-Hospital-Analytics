@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Profile | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            color: #176b83;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .profile-card, .detail-card, .history-card, .analysis-card {
+            background: white;
+            border: 1px solid #e5eaf0;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .identity {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: #e0f2f1;
+            color: #176b83;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .identity h2 {
+            margin: 0 0 6px;
+        }
+
+        .muted {
+            color: #667085;
+            margin: 0;
+        }
+
+        .detail-grid, .stats-grid, .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 9px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-item span, .stat-label {
+            display: block;
+            color: #667085;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .detail-item strong {
+            color: #243447;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid #e5eaf0;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #176b83;
+        }
+
+        .section-title {
+            margin: 0 0 18px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .history-table th, .history-table td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e5eaf0;
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            color: #475467;
+            font-size: 13px;
+        }
+
+        .message {
+            color: #667085;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .analysis-item {
+            padding: 18px;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .analysis-item h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+        }
+
+        .analysis-item p {
+            margin: 0;
+            color: #176b83;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .bar-row {
+            margin: 16px 0;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 7px;
+            font-size: 14px;
+        }
+
+        .bar-track {
+            height: 9px;
+            background: #e9eef2;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #178b91;
+            border-radius: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .detail-grid, .stats-grid, .analysis-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .detail-grid, .stats-grid, .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-card, .detail-card, .history-card, .analysis-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <a class="nav-link" href="index.html">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="departments.html">▤ &nbsp; Departments</a>
+        <a class="nav-link" href="analytics.html">▥ &nbsp; Data Analytics</a>
+        <a class="nav-link" href="visits.html">▣ &nbsp; Patient Visits</a>
+        <a class="nav-link active" href="patients.html">♙ &nbsp; Patient Directory</a>
+        <a class="nav-link" href="add-patient.html">＋ &nbsp; Add Patient</a>
+        <a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Connecting...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="profile-header">
+            <div>
+                <p class="eyebrow">PATIENT RECORD MANAGEMENT</p>
+                <h1>Patient Profile</h1>
+                <p class="subtitle">Patient information, visit history, and analytics.</p>
+            </div>
+            <a class="back-link" href="patients.html">← Back to Directory</a>
+        </header>
+
+        <p id="page-message" class="message" role="status" aria-live="polite">
+            Loading patient profile...
+        </p>
+
+        <div id="profile-content" hidden>
+            <section class="profile-card">
+                <div class="identity">
+                    <div class="avatar" id="patient-avatar">P</div>
+                    <div>
+                        <h2 id="patient-name">Patient</h2>
+                        <p class="muted" id="patient-id"></p>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span>Phone Number</span>
+                        <strong id="patient-phone">—</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Date of Birth</span>
+                        <strong id="patient-dob">—</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Gender</span>
+                        <strong id="patient-gender">—</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Age Band</span>
+                        <strong id="patient-age-band">—</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Visits</span>
+                    <div class="stat-value" id="total-visits">0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Departments Visited</span>
+                    <div class="stat-value" id="departments-visited">0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Active Visit Months</span>
+                    <div class="stat-value" id="active-months">0</div>
+                </div>
+            </section>
+
+            <section class="history-card">
+                <h2 class="section-title">Visit History</h2>
+                <p class="message" id="history-message"></p>
+
+                <div class="table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Visit ID</th>
+                                <th>Visit Date</th>
+                                <th>Department</th>
+                                <th>Visit Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="analysis-card">
+                <h2 class="section-title">Individual Analytics</h2>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <h3>Average Visits per Active Month</h3>
+                        <p id="average-visits">0</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h3>Most Visited Department</h3>
+                        <p id="most-visited">—</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h3>First Recorded Visit</h3>
+                        <p id="first-visit">—</p>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:28px;">Visits by Department</h3>
+                <div id="department-breakdown"></div>
+
+                <h3 style="margin-top:28px;">Monthly Visit Trends</h3>
+                <div id="monthly-breakdown"></div>
+            </section>
+        </div>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get("id");
+
+        const pageMessage = document.getElementById("page-message");
+        const profileContent = document.getElementById("profile-content");
+        const connectionStatus = document.getElementById("connection-status");
+
+        function displayValue(value) {
+            return value === null || value === undefined || value === ""
+                ? "—"
+                : String(value);
+        }
+
+        function formatDate(value) {
+            if (!value) return "—";
+
+            const dateText = String(value);
+            const parts = dateText.split("-");
+
+            if (parts.length !== 3) return dateText;
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
+        function setText(id, value) {
+            document.getElementById(id).textContent = displayValue(value);
+        }
+
+        function addHistoryRow(visit) {
+            const row = document.createElement("tr");
+
+            [
+                visit.visit_id,
+                formatDate(visit.visit_date),
+                visit.department_name,
+                visit.visit_type
+            ].forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = displayValue(value);
+                row.appendChild(cell);
+            });
+
+            document.getElementById("history-body").appendChild(row);
+        }
+
+        function renderBars(containerId, entries, labelKey, valueKey) {
+            const container = document.getElementById(containerId);
+            container.replaceChildren();
+
+            if (!entries || entries.length === 0) {
+                const message = document.createElement("p");
+                message.className = "message";
+                message.textContent = "No data available yet.";
+                container.appendChild(message);
+                return;
+            }
+
+            const maxValue = Math.max(
+                ...entries.map(item => Number(item[valueKey]) || 0),
+                1
+            );
+
+            entries.forEach(item => {
+                const value = Number(item[valueKey]) || 0;
+                const row = document.createElement("div");
+                row.className = "bar-row";
+
+                const label = document.createElement("div");
+                label.className = "bar-label";
+
+                const name = document.createElement("span");
+                name.textContent = displayValue(item[labelKey]);
+
+                const count = document.createElement("strong");
+                count.textContent = String(value);
+
+                label.append(name, count);
+
+                const track = document.createElement("div");
+                track.className = "bar-track";
+
+                const fill = document.createElement("div");
+                fill.className = "bar-fill";
+                fill.style.width = `${(value / maxValue) * 100}%`;
+
+                track.appendChild(fill);
+                row.append(label, track);
+                container.appendChild(row);
+            });
+        }
+
+        async function getJson(url) {
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || result.message || "Request failed.");
+            }
+
+            return result;
+        }
+
+        async function loadProfile() {
+            if (!patientId || !/^\d+$/.test(patientId)) {
+                throw new Error("Patient ID is missing or invalid. Return to the Patient Directory.");
+            }
+
+            const [patient, analysis] = await Promise.all([
+                getJson(`${API_URL}/api/patients/${encodeURIComponent(patientId)}`),
+                getJson(`${API_URL}/api/patients/${encodeURIComponent(patientId)}/analysis`)
+            ]);
+
+            const patientData = patient.patient || patient;
+            const visits = patient.visits || patient.visit_history || [];
+
+            setText("patient-name", patientData.patient_name || "Name not provided");
+            setText("patient-id", `Patient ID: ${patientData.patient_id ?? patientId}`);
+            setText("patient-phone", patientData.phone_number);
+            setText("patient-dob", formatDate(patientData.date_of_birth));
+            setText("patient-gender", patientData.gender);
+            setText("patient-age-band", patientData.age_band);
+
+            const name = patientData.patient_name || "P";
+            document.getElementById("patient-avatar").textContent =
+                name.trim().charAt(0).toUpperCase() || "P";
+
+            const totalVisits = analysis.total_visits ?? visits.length;
+            const departments = analysis.departments_visited ?? 0;
+            const activeMonths = analysis.active_months ??
+                (analysis.monthly_trends || analysis.monthly_breakdown || []).length;
+
+            setText("total-visits", totalVisits);
+            setText("departments-visited", departments);
+            setText("active-months", activeMonths);
+            setText("average-visits", analysis.average_visits_per_active_month ?? 0);
+
+            const departmentEntries = analysis.department_breakdown ||
+                analysis.departments || [];
+
+            const mostVisited = departmentEntries.length
+                ? departmentEntries.reduce((best, item) =>
+                    Number(item.total_visits ?? item.visit_count ?? item.count ?? 0) >
+                    Number(best.total_visits ?? best.visit_count ?? best.count ?? 0)
+                        ? item : best
+                )
+                : null;
+
+            setText(
+                "most-visited",
+                mostVisited
+                    ? (mostVisited.department_name || mostVisited.name || "—")
+                    : "—"
+            );
+
+            document.getElementById("history-body").replaceChildren();
+
+            if (visits.length) {
+                visits.forEach(addHistoryRow);
+                document.getElementById("history-message").textContent =
+                    `${visits.length} visit record(s) shown.`;
+            } else {
+                document.getElementById("history-message").textContent =
+                    "No visits have been recorded for this patient yet.";
+
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.colSpan = 4;
+                cell.textContent = "No visit history available.";
+                row.appendChild(cell);
+                document.getElementById("history-body").appendChild(row);
+            }
+
+            const monthlyEntries = analysis.monthly_trends ||
+                analysis.monthly_breakdown || [];
+
+            setText(
+                "first-visit",
+                visits.length
+                    ? formatDate(visits[visits.length - 1].visit_date)
+                    : "No visits"
+            );
+
+            renderBars(
+                "department-breakdown",
+                departmentEntries,
+                "department_name",
+                "total_visits"
+            );
+
+            // Support alternate field names returned by the API.
+            const normalizedDepartments = departmentEntries.map(item => ({
+                department_name: item.department_name || item.name || "Unknown",
+                total_visits: Number(
+                    item.total_visits ?? item.visit_count ?? item.count ?? 0
+                )
+            }));
+
+            renderBars(
+                "department-breakdown",
+                normalizedDepartments,
+                "department_name",
+                "total_visits"
+            );
+
+            const normalizedMonths = monthlyEntries.map(item => ({
+                month: item.visit_month || item.month || item.month_name || "Unknown",
+                total_visits: Number(
+                    item.total_visits ?? item.visit_count ?? item.count ?? 0
+                )
+            }));
+
+            renderBars(
+                "monthly-breakdown",
+                normalizedMonths,
+                "month",
+                "total_visits"
+            );
+
+            connectionStatus.textContent = "Backend connected";
+            pageMessage.textContent = "";
+            profileContent.hidden = false;
+        }
+
+        loadProfile().catch(error => {
+            console.error("Unable to load patient profile:", error);
+            connectionStatus.textContent = "Profile unavailable";
+            pageMessage.className = "message error";
+            pageMessage.textContent = error.message;
+        });
+    </script>
+</body>
+</html>
+

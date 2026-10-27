@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Visits | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .visits-toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .visits-toolbar input,
+        .visits-toolbar select {
+            padding: 12px;
+            border: 1px solid #dce3ea;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .visits-toolbar input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .visits-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .visits-table th,
+        .visits-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #edf0f4;
+            white-space: nowrap;
+        }
+
+        .visits-table th {
+            color: #65748b;
+            font-size: 12px;
+            text-transform: uppercase;
+            background: #f7f9fc;
+        }
+
+        .visits-table td {
+            color: #344054;
+            font-size: 14px;
+        }
+
+        .visit-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #e8f3ff;
+            color: #2164a5;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .visits-count {
+            margin-bottom: 16px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .table-message {
+            padding: 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .visits-summary {
+            margin-bottom: 22px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #export-button {
+            background: #176b83;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #export-button:hover {
+            background: #125568;
+        }
+
+        #export-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 650px) {
+            .visits-toolbar {
+                flex-direction: column;
+            }
+
+            .visits-toolbar input,
+            .visits-toolbar select {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <a class="nav-link" href="dashboard.html">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="departments.html">▤ &nbsp; Departments</a>
+        <a class="nav-link" href="analytics.html">▥ &nbsp; Data Analytics</a>
+        <a class="nav-link active" href="visits.html">▣ &nbsp; Patient Visits</a>
+        <a class="nav-link" href="patients.html">♙ &nbsp; Patient Directory</a>
+        <a class="nav-link" href="add-patient.html">＋ &nbsp; Add Patient</a>
+        <a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Connecting...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">HOSPITAL RECORD MANAGEMENT</p>
+                <h1>Patient Visits</h1>
+                <p class="subtitle">
+                    Browse, filter, and export existing hospital visit records.
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <button id="export-button" onclick="exportVisitsToCSV()">
+                    ↓ Export CSV
+                </button>
+
+                <button id="refresh-button" onclick="loadVisits()">
+                    ↻ Refresh Data
+                </button>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">VISIT REGISTER</p>
+                <h2>Hospital Visit Records</h2>
+                <p>
+                    View visit dates, departments, visit types,
+                    and de-identified patient record IDs.
+                </p>
+            </div>
+            <div class="welcome-symbol">▣</div>
+        </section>
+
+        <section class="stats-grid visits-summary">
+            <article class="stat-card">
+                <div class="stat-icon blue">▣</div>
+                <p>Total Visit Records</p>
+                <h2 id="total-visits">--</h2>
+                <span>Records returned by the API</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon purple">▤</div>
+                <p>Departments Represented</p>
+                <h2 id="total-visit-departments">--</h2>
+                <span>Departments with visits</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon green">♙</div>
+                <p>Patients Represented</p>
+                <h2 id="total-visit-patients">--</h2>
+                <span>Distinct patient record IDs</span>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Visit Register</h2>
+                    <p>Search records or filter by date and visit type.</p>
+                </div>
+                <span class="panel-icon">▤</span>
+            </div>
+
+            <div class="visits-toolbar">
+                <input
+                    type="search"
+                    id="search-visits"
+                    placeholder="Search patient ID, department, or date..."
+                    aria-label="Search visit records"
+                >
+
+                <input
+                    type="date"
+                    id="visit-date-filter"
+                    aria-label="Filter visits by date"
+                >
+
+                <select id="visit-type-filter" aria-label="Filter by visit type">
+                    <option value="">All visit types</option>
+                </select>
+            </div>
+
+            <p class="visits-count" id="visits-count">
+                Loading visit records...
+            </p>
+
+            <div class="table-wrapper">
+                <table class="visits-table">
+                    <thead>
+                        <tr>
+                            <th>Visit ID</th>
+                            <th>Date</th>
+                            <th>Patient ID</th>
+                            <th>Age Band</th>
+                            <th>Department</th>
+                            <th>Visit Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visits-table-body">
+                        <tr>
+                            <td colspan="6" class="table-message">
+                                Loading visit records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask, Pandas and MySQL</p>
+        </footer>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+        let allVisits = [];
+
+        async function loadVisits() {
+            const status = document.getElementById("connection-status");
+            const button = document.getElementById("refresh-button");
+            const tbody = document.getElementById("visits-table-body");
+            const count = document.getElementById("visits-count");
+
+            button.disabled = true;
+            status.textContent = "Connecting...";
+            count.textContent = "Loading visit records...";
+
+            try {
+                const response = await fetch(`${API_URL}/api/visits`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned status ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data)) {
+                    throw new Error("The API did not return a list of visits.");
+                }
+
+                allVisits = data;
+
+                document.getElementById("total-visits").textContent = data.length;
+
+                document.getElementById("total-visit-departments").textContent =
+                    new Set(data.map(v => v.department_name).filter(Boolean)).size;
+
+                document.getElementById("total-visit-patients").textContent =
+                    new Set(data.map(v => v.patient_id).filter(v => v != null)).size;
+
+                const typeFilter = document.getElementById("visit-type-filter");
+                const previousType = typeFilter.value;
+
+                typeFilter.replaceChildren(
+                    new Option("All visit types", "")
+                );
+
+                [...new Set(data.map(v => v.visit_type).filter(Boolean))]
+                    .sort()
+                    .forEach(type => typeFilter.add(new Option(type, type)));
+
+                typeFilter.value = [...typeFilter.options]
+                    .some(option => option.value === previousType)
+                    ? previousType : "";
+
+                status.textContent = "Backend connected";
+                renderVisits();
+
+            } catch (error) {
+                console.error("CareMetrics loading error:", error);
+                status.textContent = "Connection error";
+                count.textContent = "Could not load visit records.";
+
+                tbody.replaceChildren();
+
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+
+                cell.colSpan = 6;
+                cell.className = "table-message";
+                cell.textContent =
+                    "Unable to load visits. Check that Flask is running and refresh.";
+
+            } finally {
+                button.disabled = false;
+                button.textContent = "↻ Refresh Data";
+            }
+        }
+
+        function getFilteredVisits() {
+            const search = document.getElementById("search-visits")
+                .value.trim().toLowerCase();
+
+            const type = document.getElementById("visit-type-filter").value;
+            const date = document.getElementById("visit-date-filter").value;
+
+            return allVisits.filter(v => {
+                const searchable = [
+                    v.visit_id,
+                    v.visit_date,
+                    v.patient_id,
+                    v.age_band,
+                    v.department_name,
+                    v.visit_type
+                ].join(" ").toLowerCase();
+
+                const matchesSearch = searchable.includes(search);
+                const matchesType = !type || v.visit_type === type;
+                const matchesDate = !date ||
+                    String(v.visit_date).slice(0, 10) === date;
+
+                return matchesSearch && matchesType && matchesDate;
+            });
+        }
+
+        function renderVisits() {
+            const tbody = document.getElementById("visits-table-body");
+            const filtered = getFilteredVisits();
+
+            tbody.replaceChildren();
+
+            document.getElementById("visits-count").textContent =
+                `Showing ${filtered.length} of ${allVisits.length} visit records`;
+
+            if (filtered.length === 0) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+
+                cell.colSpan = 6;
+                cell.className = "table-message";
+                cell.textContent = "No matching visit records found.";
+                return;
+            }
+
+            filtered.forEach(v => {
+                const row = tbody.insertRow();
+
+                [
+                    v.visit_id,
+                    v.visit_date,
+                    v.patient_id,
+                    v.age_band || "Not specified",
+                    v.department_name
+                ].forEach(value => {
+                    row.insertCell().textContent = value ?? "";
+                });
+
+                const badge = document.createElement("span");
+                badge.className = "visit-badge";
+                badge.textContent = v.visit_type || "Not specified";
+
+                row.insertCell().appendChild(badge);
+            });
+        }
+
+        function exportVisitsToCSV() {
+            const visits = getFilteredVisits();
+
+            if (visits.length === 0) {
+                alert("No matching visit records available to export.");
+                return;
+            }
+
+            const headers = [
+                "Visit ID",
+                "Visit Date",
+                "Patient ID",
+                "Age Band",
+                "Department",
+                "Visit Type"
+            ];
+
+            const escapeCSV = value =>
+                '"' + String(value ?? "").replace(/"/g, '""') + '"';
+
+            const rows = visits.map(v => [
+                v.visit_id,
+                v.visit_date,
+                v.patient_id,
+                v.age_band,
+                v.department_name,
+                v.visit_type
+            ]);
+
+            const csv = [headers, ...rows]
+                .map(row => row.map(escapeCSV).join(","))
+                .join("\r\n");
+
+            const blob = new Blob(["\uFEFF" + csv], {
+                type: "text/csv;charset=utf-8;"
+            });
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = "caremetrics_patient_visits.csv";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        document.getElementById("search-visits")
+            .addEventListener("input", renderVisits);
+
+        document.getElementById("visit-type-filter")
+            .addEventListener("change", renderVisits);
+
+        document.getElementById("visit-date-filter")
+            .addEventListener("change", renderVisits);
+
+        loadVisits();
+    </script>
+</body>
+</html>

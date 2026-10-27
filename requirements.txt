@@ -1,0 +1,9 @@
+
+Flask
+mysql-connector-python
+pandas
+numpy
+matplotlib
+gunicorn
+python-dotenv
+Flask-CORS

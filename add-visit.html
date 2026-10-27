@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Visit | CareMetrics</title>
+    <link rel="stylesheet" href="./style.css">
+
+    <style>
+        .visit-form {
+            max-width: 800px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #344054;
+        }
+
+        .form-group select,
+        .form-group input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #dce3ea;
+            border-radius: 8px;
+            background: white;
+            color: #17243a;
+            font-size: 14px;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: 2px solid #b9e4e4;
+            border-color: #176b83;
+        }
+
+        .form-help {
+            margin-top: 7px;
+            color: #7a879a;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .save-button {
+            background: #176b83;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 13px 22px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .save-button:hover {
+            background: #12566a;
+        }
+
+        .save-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .form-message {
+            display: none;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .form-message.success {
+            display: block;
+            background: #e8f7ee;
+            color: #176b43;
+        }
+
+        .form-message.error {
+            display: block;
+            background: #fff0f0;
+            color: #b42318;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <nav>
+            <a class="nav-link" href="./dashboard.html">▦ &nbsp; Dashboard</a>
+            <a class="nav-link" href="./departments.html">▤ &nbsp; Departments</a>
+            <a class="nav-link" href="./analytics.html">▥ &nbsp; Data Analytics</a>
+            <a class="nav-link" href="./visits.html">▣ &nbsp; Patient Visits</a>
+            <a class="nav-link" href="./patients.html">♙ &nbsp; Patient Directory</a>
+            <a class="nav-link" href="./add-patient.html">＋ &nbsp; Add Patient</a>
+            <a class="nav-link active" href="./add-visit.html">＋ &nbsp; Register Visit</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Checking backend...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">PATIENT RECORD MANAGEMENT</p>
+                <h1>Register a Visit</h1>
+                <p class="subtitle">
+                    Record a hospital visit for an existing patient.
+                </p>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">NEW VISIT RECORD</p>
+                <h2>Register a hospital visit</h2>
+                <p>
+                    Select a patient and department, then enter
+                    the visit date and type.
+                </p>
+            </div>
+            <div class="welcome-symbol">✚</div>
+        </section>
+
+        <section class="section-heading">
+            <div>
+                <h2>Visit Management</h2>
+                <p>Add a visit record to your hospital database.</p>
+            </div>
+        </section>
+
+        <section class="panel visit-form">
+            <div class="panel-heading">
+                <div>
+                    <h2>Visit Details</h2>
+                    <p>All fields are required.</p>
+                </div>
+                <span class="panel-icon">▣</span>
+            </div>
+
+            <form id="visit-form">
+                <div class="form-group">
+                    <label for="patient-id">Patient *</label>
+                    <select id="patient-id" name="patient_id" required>
+                        <option value="">Loading patients...</option>
+                    </select>
+                    <p class="form-help">
+                        Choose an existing patient record.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="department-id">Department *</label>
+                    <select id="department-id" name="department_id" required>
+                        <option value="">Loading departments...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="visit-date">Visit Date *</label>
+                    <input type="date" id="visit-date" name="visit_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="visit-type">Visit Type *</label>
+                    <select id="visit-type" name="visit_type" required>
+                        <option value="">Select visit type</option>
+                        <option value="Appointment">Appointment</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Follow-up">Follow-up</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="save-button" id="save-button">
+                    Save Visit
+                </button>
+
+                <div id="form-message"
+                     class="form-message"
+                     role="status"
+                     aria-live="polite"></div>
+            </form>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        const patientSelect = document.getElementById("patient-id");
+        const departmentSelect = document.getElementById("department-id");
+        const visitDateInput = document.getElementById("visit-date");
+        const visitForm = document.getElementById("visit-form");
+        const saveButton = document.getElementById("save-button");
+        const message = document.getElementById("form-message");
+        const connectionStatus = document.getElementById("connection-status");
+
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        }
+
+        visitDateInput.max = getTodayDate();
+        visitDateInput.value = getTodayDate();
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `form-message ${type}`;
+        }
+
+        async function fetchJSON(url, options = {}) {
+            const response = await fetch(url, options);
+
+            let data;
+
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error("The server returned an invalid response.");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || "The request failed.");
+            }
+
+            return data;
+        }
+
+        async function loadPatients() {
+            try {
+                // The API may return all patients or a search result list.
+                const patients = await fetchJSON(`${API_URL}/api/patients`);
+
+                if (!Array.isArray(patients)) {
+                    throw new Error("The patient list format is incorrect.");
+                }
+
+                patientSelect.replaceChildren(
+                    new Option("Select patient", "")
+                );
+
+                patients.forEach(patient => {
+                    const name = patient.patient_name || patient.name ||
+                        `Patient #${patient.patient_id}`;
+
+                    const ageBand = patient.age_band
+                        ? ` · ${patient.age_band}`
+                        : "";
+
+                    patientSelect.add(
+                        new Option(
+                            `#${patient.patient_id} — ${name}${ageBand}`,
+                            patient.patient_id
+                        )
+                    );
+                });
+
+                if (patients.length === 0) {
+                    patientSelect.replaceChildren(
+                        new Option("No patients found", "")
+                    );
+                }
+            } catch (error) {
+                patientSelect.replaceChildren(
+                    new Option("Unable to load patients", "")
+                );
+
+                throw new Error("Patients: " + error.message);
+            }
+        }
+
+        async function loadDepartments() {
+            try {
+                const departments = await fetchJSON(
+                    `${API_URL}/api/departments`
+                );
+
+                if (!Array.isArray(departments)) {
+                    throw new Error("The department list format is incorrect.");
+                }
+
+                departmentSelect.replaceChildren(
+                    new Option("Select department", "")
+                );
+
+                departments.forEach(department => {
+                    departmentSelect.add(
+                        new Option(
+                            department.department_name,
+                            department.department_id
+                        )
+                    );
+                });
+
+                if (departments.length === 0) {
+                    departmentSelect.replaceChildren(
+                        new Option("No departments found", "")
+                    );
+                }
+            } catch (error) {
+                departmentSelect.replaceChildren(
+                    new Option("Unable to load departments", "")
+                );
+
+                throw new Error("Departments: " + error.message);
+            }
+        }
+
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+
+                if (!response.ok) {
+                    throw new Error("Backend unavailable");
+                }
+
+                connectionStatus.textContent = "Backend connected";
+            } catch {
+                connectionStatus.textContent = "Backend disconnected";
+            }
+        }
+
+        visitForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            if (!patientSelect.value || !departmentSelect.value) {
+                showMessage(
+                    "Please select both a patient and a department.",
+                    "error"
+                );
+                return;
+            }
+
+            const selectedDate = visitDateInput.value;
+
+            if (!selectedDate || selectedDate > getTodayDate()) {
+                showMessage(
+                    "Please enter a valid visit date that is not in the future.",
+                    "error"
+                );
+                return;
+            }
+
+            saveButton.disabled = true;
+            saveButton.textContent = "Saving...";
+            message.className = "form-message";
+            message.textContent = "";
+
+            const visitData = {
+                patient_id: Number(patientSelect.value),
+                department_id: Number(departmentSelect.value),
+                visit_date: selectedDate,
+                visit_type: document.getElementById("visit-type").value
+            };
+
+            try {
+                const result = await fetchJSON(`${API_URL}/api/visits`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(visitData)
+                });
+
+                const visitId = result.visit_id;
+
+                showMessage(
+                    visitId != null
+                        ? `Visit registered successfully! Visit ID: ${visitId}`
+                        : "Visit registered successfully!",
+                    "success"
+                );
+
+                visitForm.reset();
+                visitDateInput.value = getTodayDate();
+                connectionStatus.textContent = "Backend connected";
+
+            } catch (error) {
+                console.error("Visit registration error:", error);
+
+                showMessage(
+                    error.message === "Failed to fetch"
+                        ? "Cannot connect to Flask. Make sure the backend is running."
+                        : error.message,
+                    "error"
+                );
+
+                await checkBackend();
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Visit";
+            }
+        });
+
+        async function initializePage() {
+            const results = await Promise.allSettled([
+                loadPatients(),
+                loadDepartments(),
+                checkBackend()
+            ]);
+
+            const errors = results
+                .filter(result => result.status === "rejected")
+                .map(result => result.reason.message);
+
+            if (errors.length > 0) {
+                showMessage(errors.join(" "), "error");
+            }
+        }
+
+        initializePage();
+    </script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analytics | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <a class="nav-link" href="dashboard.html">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="departments.html">▤ &nbsp; Departments</a>
+        <a class="nav-link active" href="analytics.html">▥ &nbsp; Data Analytics</a>
+        <a class="nav-link" href="visits.html">▣ &nbsp; Patient Visits</a>
+        <a class="nav-link" href="patients.html">♙ &nbsp; Patient Directory</a>
+        <a class="nav-link" href="add-patient.html">＋ &nbsp; Add Patient</a>
+        <a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Connecting...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">HOSPITAL MANAGEMENT INSIGHTS</p>
+                <h1>Data Analytics</h1>
+                <p class="subtitle">
+                    Explore department workload, daily and monthly visit
+                    patterns, and patient age-band summaries.
+                </p>
+            </div>
+
+            <button id="refresh-button" onclick="loadAnalytics()">
+                ↻ Refresh Data
+            </button>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">DATA INSIGHTS</p>
+                <h2>Turn hospital records into insights.</h2>
+                <p>
+                    Review department workload, daily visits, monthly
+                    trends, and the distribution of patient age bands.
+                </p>
+            </div>
+            <div class="welcome-symbol">▥</div>
+        </section>
+
+        <section class="content-grid analytics-grid">
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Department Workload</h2>
+                        <p>Total visits recorded by department.</p>
+                    </div>
+                    <span class="panel-icon">▥</span>
+                </div>
+
+                <div class="chart-container">
+                    <img id="workload-chart"
+                         class="analytics-chart"
+                         alt="Department workload bar chart"
+                         hidden>
+
+                    <p id="chart-message" class="message">
+                        Loading chart...
+                    </p>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Daily Visit Trends</h2>
+                        <p>Recent daily visit counts and average.</p>
+                    </div>
+                    <span class="panel-icon">↗</span>
+                </div>
+
+                <div class="trend-summary">
+                    <p>Average visits per recorded day</p>
+                    <h2 id="average-visits">--</h2>
+                </div>
+
+                <div id="visit-trend-list">
+                    <p class="message">Loading visit trends...</p>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="panel age-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Monthly Visit Trends</h2>
+                    <p>Compare the number of hospital visits recorded each month.</p>
+                </div>
+                <span class="panel-icon">📈</span>
+            </div>
+
+            <div class="chart-container" style="height: 320px;">
+                <canvas id="monthly-trend-chart"
+                        aria-label="Monthly hospital visit trends line chart"
+                        role="img"></canvas>
+            </div>
+
+            <p id="monthly-trend-message" class="message">
+                Loading monthly trends...
+            </p>
+        </section>
+
+        <section class="panel age-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Patient Age-Band Analysis</h2>
+                    <p>Patient counts grouped by age band.</p>
+                </div>
+                <span class="panel-icon">♙</span>
+            </div>
+
+            <div id="age-band-list">
+                <p class="message">Loading age-band data...</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask, Pandas, NumPy and MySQL</p>
+        </footer>
+
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+        let monthlyChart = null;
+
+        async function fetchAPI(endpoint) {
+            const response = await fetch(`${API_URL}${endpoint}`);
+
+            if (!response.ok) {
+                throw new Error(`Request failed: ${endpoint}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            return data;
+        }
+
+        async function loadAnalytics() {
+            const button = document.getElementById("refresh-button");
+            const status = document.getElementById("connection-status");
+
+            button.disabled = true;
+            button.textContent = "Loading...";
+
+            const results = await Promise.allSettled([
+                loadWorkloadChart(),
+                loadVisitTrends(),
+                loadAgeBands(),
+                loadMonthlyTrends()
+            ]);
+
+            const failed = results.every(
+                result => result.status === "rejected"
+            );
+
+            status.textContent = failed
+                ? "Connection error"
+                : "Analytics loaded";
+
+            results.forEach(result => {
+                if (result.status === "rejected") {
+                    console.error(result.reason);
+                }
+            });
+
+            button.disabled = false;
+            button.textContent = "↻ Refresh Data";
+        }
+
+        async function loadWorkloadChart() {
+            const chart = document.getElementById("workload-chart");
+            const message = document.getElementById("chart-message");
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/api/charts/department-workload.png`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Department chart unavailable");
+                }
+
+                const blob = await response.blob();
+
+                if (chart.dataset.previousUrl) {
+                    URL.revokeObjectURL(chart.dataset.previousUrl);
+                }
+
+                const imageUrl = URL.createObjectURL(blob);
+                chart.dataset.previousUrl = imageUrl;
+                chart.src = imageUrl;
+                chart.hidden = false;
+                message.hidden = true;
+            } catch (error) {
+                console.error(error);
+                chart.hidden = true;
+                message.hidden = false;
+                message.textContent =
+                    "Unable to load the department chart.";
+            }
+        }
+
+        async function loadVisitTrends() {
+            const list = document.getElementById("visit-trend-list");
+            const average = document.getElementById("average-visits");
+
+            try {
+                const data = await fetchAPI("/api/analysis/visit-trends");
+
+                average.textContent =
+                    data.average_visits_per_day ?? "--";
+
+                list.replaceChildren();
+
+                const visits = data.daily_visits || [];
+
+                if (visits.length === 0) {
+                    list.textContent = "No visit records available.";
+                    return;
+                }
+
+                visits.slice(-7).reverse().forEach(visit => {
+                    const row = document.createElement("div");
+                    row.className = "info-row";
+
+                    const date = document.createElement("span");
+                    date.textContent = visit.visit_date ?? "Unknown date";
+
+                    const count = document.createElement("strong");
+                    count.textContent =
+                        `${visit.total_visits ?? 0} visits`;
+
+                    row.append(date, count);
+                    list.appendChild(row);
+                });
+            } catch (error) {
+                console.error(error);
+                average.textContent = "--";
+                list.textContent = "Unable to load visit trends.";
+            }
+        }
+
+        async function loadMonthlyTrends() {
+            const canvas = document.getElementById("monthly-trend-chart");
+            const message = document.getElementById("monthly-trend-message");
+
+            try {
+                const data = await fetchAPI(
+                    "/api/analysis/monthly-trends"
+                );
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    if (monthlyChart) {
+                        monthlyChart.destroy();
+                        monthlyChart = null;
+                    }
+
+                    message.textContent =
+                        "No monthly visit data available.";
+                    return;
+                }
+
+                const months = data.map(item => item.visit_month);
+                const totals = data.map(
+                    item => Number(item.total_visits)
+                );
+
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                }
+
+                monthlyChart = new Chart(canvas, {
+                    type: "line",
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: "Total Visits",
+                            data: totals,
+                            borderColor: "#176b83",
+                            backgroundColor: "rgba(23, 107, 131, 0.15)",
+                            pointBackgroundColor: "#176b83",
+                            pointRadius: 5,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: "top"
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: context =>
+                                        `Total Visits: ${context.parsed.y}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Month"
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                },
+                                title: {
+                                    display: true,
+                                    text: "Number of Visits"
+                                }
+                            }
+                        }
+                    }
+                });
+
+                message.textContent =
+                    "Monthly visit trends loaded successfully.";
+            } catch (error) {
+                console.error(error);
+
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                    monthlyChart = null;
+                }
+
+                message.textContent =
+                    "Unable to load monthly trends. Check Flask and the API.";
+            }
+        }
+
+        async function loadAgeBands() {
+            const list = document.getElementById("age-band-list");
+
+            try {
+                const data = await fetchAPI("/api/analysis/age-bands");
+                list.replaceChildren();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.textContent =
+                        "No patient age-band data available.";
+                    return;
+                }
+
+                data.forEach(group => {
+                    const row = document.createElement("div");
+                    row.className = "info-row";
+
+                    const band = document.createElement("span");
+                    band.textContent =
+                        group.age_band ?? "Not specified";
+
+                    const count = document.createElement("strong");
+                    count.textContent =
+                        `${group.total_patients ?? 0} patients`;
+
+                    row.append(band, count);
+                    list.appendChild(row);
+                });
+            } catch (error) {
+                console.error(error);
+                list.textContent = "Unable to load age-band data.";
+            }
+        }
+
+        loadAnalytics();
+    </script>
+
+</body>
+</html>

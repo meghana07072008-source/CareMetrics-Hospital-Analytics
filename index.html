@@ -1,0 +1,192 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareMetrics | Dashboard</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <nav>
+            <a class="nav-link active" href="./index.html">
+                ▦ &nbsp; Dashboard
+            </a>
+
+            <a class="nav-link" href="./departments.html">
+                ▤ &nbsp; Departments
+            </a>
+
+            <a class="nav-link" href="./analytics.html">
+                ▥ &nbsp; Data Analytics
+            </a>
+
+            <a class="nav-link" href="./visits.html">
+                ▣ &nbsp; Patient Visits
+            </a>
+
+            <a class="nav-link" href="./add-patient.html">
+                ＋ &nbsp; Add Patient
+            </a>
+
+            <a class="nav-link" href="./add-visit.html">
+                ＋ &nbsp; Register Visit
+            </a>
+            
+<a class="nav-link" href="patients.html">♙ &nbsp; Patient Directory</a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Checking connection...</span>
+        </div>
+    </aside>
+
+    <!-- Main Dashboard -->
+    <main class="main-content" id="dashboard">
+
+        <!-- Header -->
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">HOSPITAL MANAGEMENT INSIGHTS</p>
+                <h1>Analytics Dashboard</h1>
+                <p class="subtitle">
+                    Monitor hospital visits and department activity.
+                </p>
+            </div>
+
+            <button id="refresh-button" onclick="loadDashboard()">
+                ↻ Refresh Data
+            </button>
+        </header>
+
+        <!-- Welcome Section -->
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">WELCOME TO CAREMETRICS</p>
+                <h2>Understand your hospital data.</h2>
+                <p>
+                    Explore patient records, hospital visits,
+                    and department information in one place.
+                </p>
+            </div>
+
+            <div class="welcome-symbol">✚</div>
+        </section>
+
+        <!-- Hospital Summary -->
+        <section class="section-heading" id="overview">
+            <div>
+                <h2>Hospital Overview</h2>
+                <p>Summary of records available in your database.</p>
+            </div>
+
+            <span class="live-label">● DATABASE SUMMARY</span>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon blue">♙</div>
+                <p>Total Patients</p>
+                <h2 id="total-patients">--</h2>
+                <span>Registered patient records</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon purple">▤</div>
+                <p>Total Visits</p>
+                <h2 id="total-visits">--</h2>
+                <span>Recorded hospital visits</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon green">✚</div>
+                <p>Departments</p>
+                <h2 id="total-departments">--</h2>
+                <span>Available departments</span>
+            </article>
+        </section>
+
+        <!-- Department Preview and System Status -->
+        <section class="content-grid">
+
+            <article class="panel" id="departments">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Hospital Departments</h2>
+                        <p>Departments retrieved from MySQL.</p>
+                    </div>
+
+                    <span class="panel-icon">▤</span>
+                </div>
+
+                <div id="department-list">
+                    <p class="message">Loading departments...</p>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>System Information</h2>
+                        <p>Application status</p>
+                    </div>
+
+                    <span class="panel-icon">⌘</span>
+                </div>
+
+                <div class="info-row">
+                    <span>Backend</span>
+                    <strong id="backend-status">Checking...</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Database</span>
+                    <strong id="database-status">Checking...</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Analysis Mode</span>
+                    <strong>Operational</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Data Source</span>
+                    <strong>MySQL</strong>
+                </div>
+
+                <p class="notice">
+                    This dashboard displays operational statistics,
+                    not medical diagnoses or treatment recommendations.
+                </p>
+            </article>
+
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+
+    </main>
+
+    <!-- Keep the existing dashboard JavaScript -->
+    <script src="./script.js"></script>
+
+</body>
+</html>

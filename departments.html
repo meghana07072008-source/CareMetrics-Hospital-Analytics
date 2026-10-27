@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments | CareMetrics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CareMetrics</h2>
+                <p>Hospital Analytics</p>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        
+<a class="nav-link" href="index.html">▦ &nbsp; Dashboard</a>
+<a class="nav-link active" href="departments.html">▤ &nbsp; Departments</a>
+<a class="nav-link" href="analytics.html">▥ &nbsp; Data Analytics</a>
+<a class="nav-link" href="visits.html">▣ &nbsp; Patient Visits</a>
+<a class="nav-link" href="add-patient.html">＋ &nbsp; Add Patient</a>
+<a class="nav-link" href="add-visit.html">＋ &nbsp; Register Visit</a>
+
+<a class="nav-link" href="patients.html">♙ &nbsp; Patient Directory</a>
+
+        <div class="sidebar-bottom">
+            <div class="status-dot"></div>
+            <span id="connection-status">Connecting...</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">HOSPITAL MANAGEMENT INSIGHTS</p>
+                <h1>Hospital Departments</h1>
+                <p class="subtitle">
+                    Explore departments and their hospital workload.
+                </p>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="eyebrow light">DEPARTMENT OVERVIEW</p>
+                <h2>Hospital services at a glance.</h2>
+                <p>
+                    View registered departments and the number
+                    of visits recorded for each department.
+                </p>
+            </div>
+            <div class="welcome-symbol">✚</div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon blue">▤</div>
+                <p>Total Departments</p>
+                <h2 id="department-count">--</h2>
+                <span>Departments in MySQL</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon purple">↗</div>
+                <p>Total Recorded Visits</p>
+                <h2 id="visit-count">--</h2>
+                <span>Across all departments</span>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Department Directory</h2>
+                    <p>Department details and recorded visit counts.</p>
+                </div>
+                <span class="panel-icon">▤</span>
+            </div>
+
+            <div id="department-list">
+                <p class="message">Loading department information...</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>CareMetrics · Hospital Patient Data Analysis System</p>
+            <p>Built with Python, Flask and MySQL</p>
+        </footer>
+
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        async function loadDepartments() {
+            const list = document.getElementById("department-list");
+            const status = document.getElementById("connection-status");
+
+            try {
+                const responses = await Promise.all([
+                    fetch(`${API_URL}/api/departments`),
+                    fetch(`${API_URL}/api/analysis/department-workload`),
+                    fetch(`${API_URL}/api/summary`)
+                ]);
+
+                if (responses.some(response => !response.ok)) {
+                    throw new Error("Unable to retrieve department data.");
+                }
+
+                const [departments, workload, summary] =
+                    await Promise.all(responses.map(response => response.json()));
+
+                if (departments.error || workload.error || summary.error) {
+                    throw new Error("The server returned an error.");
+                }
+
+                const workloadMap = new Map(
+                    workload.map(item => [
+                        item.department_name,
+                        Number(item.total_visits)
+                    ])
+                );
+
+                document.getElementById("department-count").textContent =
+                    departments.length;
+
+                document.getElementById("visit-count").textContent =
+                    summary.total_visits;
+
+                list.replaceChildren();
+
+                departments.forEach((department, index) => {
+                    const item = document.createElement("div");
+                    item.className = "department-item";
+
+                    const number = document.createElement("div");
+                    number.className = "department-number";
+                    number.textContent = String(index + 1).padStart(2, "0");
+
+                    const details = document.createElement("div");
+                    details.style.flex = "1";
+
+                    const name = document.createElement("p");
+                    name.className = "department-name";
+                    name.textContent = department.department_name;
+
+                    const id = document.createElement("p");
+                    id.className = "department-id";
+                    id.textContent = `Department ID: ${department.department_id}`;
+
+                    const visits = document.createElement("p");
+                    visits.className = "department-id";
+                    visits.textContent =
+                        `Recorded visits: ${workloadMap.get(department.department_name) ?? 0}`;
+
+                    details.append(name, id, visits);
+                    item.append(number, details);
+                    list.appendChild(item);
+                });
+
+                status.textContent = "Backend connected";
+
+            } catch (error) {
+                console.error(error);
+                status.textContent = "Connection error";
+                list.textContent =
+                    "Unable to load departments. Please check that the Flask server is running.";
+            }
+        }
+
+        loadDepartments();
+    </script>
+
+</body>
+</html>
